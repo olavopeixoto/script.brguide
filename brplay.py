@@ -566,13 +566,13 @@ class BRplayTVGuideApi():
         guide = responsebefore_json['guide'] + response_json['guide']
 
         channels = [channel['name'].lower() for channel in self.channels()]
-        channels.append('universal channel')
+        # channels.append('universal channel')
         for channel in list(channels):
             if channel.endswith(' rj'):
                 channels.append(channel.replace(' rj', ''))
 
         for guide_channel in guide:
-            guide_channel_name = guide_channel['call_letter'].lower().replace(' hd', '').replace('+ globosat', 'mais globosat').replace('off', 'canal off')
+            guide_channel_name = guide_channel['call_letter'].lower().replace(' hd', '').replace('+ globosat', 'mais globosat').replace('off', 'canal off').replace('universal channel', 'universal')
 
             if not guide_channel_name in channels:
                 continue
