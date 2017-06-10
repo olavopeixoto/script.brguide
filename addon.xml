@@ -57,5 +57,10 @@
         <platform>all</platform>
         <license>GPLv2</license>
         <source>https://github.com/olavopeixoto/script.brguide</source>
+        <assets>
+			<icon>icon.png</icon>
+			<fanart>fanart.jpg</fanart>
+			<screenshot>resources/screenshots/screenshot-01.png</screenshot>
+		</assets>
     </extension>
 </addon>
