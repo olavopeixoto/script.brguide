@@ -582,11 +582,11 @@ class BRplayTVGuideApi():
             programs = date_programs[date] if date in date_programs else []
             for schedule in guide_channel['schedule']:
                 program_thumb = schedule['program']['image_medium'] if 'placeholder' not in schedule['program']['image_medium'] else None
-                program_poster = schedule['program']['image_poster']
-                program_fanart = schedule['program']['image_backdrop']
-                program_name = schedule['program']['name']
-                program_genre = schedule['program']['sub_category']
-                episode_description = schedule['episode']['description']
+                program_poster = schedule['program']['image_poster'] if 'image_poster' in schedule['program'] else None
+                program_fanart = schedule['program']['image_backdrop'] if 'image_backdrop' in schedule['program'] else None
+                program_name = schedule['program']['name'] if 'name' in schedule['program'] else 'No Name'
+                program_genre = schedule['program']['sub_category'] if 'sub_category' in schedule['program'] else 'No Genre'
+                episode_description = schedule['episode']['description'] if 'description' in schedule['program'] else 'No Decription'
 
                 start_date = schedule['start_date']
                 end_date = schedule['end_date']
