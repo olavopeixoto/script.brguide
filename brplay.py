@@ -79,7 +79,7 @@ class BRplayTVGuideApi():
 
         return self.channelList
 
-    def programs(self, channelId= None, offset = None, tvdate = None):
+    def programs(self, channelId=None, offset=None, tvdate=None):
         """
         Returns program list
         """
@@ -204,40 +204,64 @@ class BRplayTVGuideApi():
         return data, cookies
 
     def getJson(self, url, headers={}, post=None):
+
+        import requests
+
         headers.update({'Accept-Encoding': 'gzip'})
-        request = urllib2.Request(url, data=post, headers=headers)
-        response = urllib2.urlopen(request)
-        data = response.read()
 
-        try:
-            encoding = response.info().getheader('Content-Encoding')
-        except:
-            encoding = None
-        if encoding == 'gzip':
-            data = gzip.GzipFile(fileobj=StringIO.StringIO(data)).read()
+        if post:
+            response = requests.post(url,
+                          data=json.dumps(post),
+                          headers=headers,
+                          verify=False)
+        else:
+            response = requests.get(url,
+                                     headers=headers,
+                                     verify=False)
 
-        response.close()
+        data = response.text
 
-        if 'application/json' in response.headers.get('content-type'):
+        if 'application/json' in response.headers['content-type']:
             return json.loads(data)
         else:
             return []
 
+        # headers.update({'Accept-Encoding': 'gzip'})
+        # request = urllib2.Request(url, data=post, headers=headers)
+        # response = urllib2.urlopen(request)
+        # data = response.read()
+        #
+        # try:
+        #     encoding = response.info().getheader('Content-Encoding')
+        # except:
+        #     encoding = None
+        # if encoding == 'gzip':
+        #     data = gzip.GzipFile(fileobj=StringIO.StringIO(data)).read()
+        #
+        # response.close()
+        #
+        # if 'application/json' in response.headers.get('content-type'):
+        #     return json.loads(data)
+        # else:
+        #     return []
+
     def getLiveChannels(self):
 
-        live = [{
-                'slug': 'bandnews',
-                'name': 'Band News',
-                'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BandNews_TV_logo_2010.svg/1200px-BandNews_TV_logo_2010.svg.png',
-                'fanart': 'https://observatoriodatelevisao.bol.uol.com.br/wp-content/uploads/2015/03/BandNews.jpg',
-                'thumb': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BandNews_TV_logo_2010.svg/1200px-BandNews_TV_logo_2010.svg.png',
-                'playable': 'true',
-                'plot': None,
-                'id': -1,
-                'channel_id': -1,
-                'duration': None,
-                'streamUrl': 'http://evcv.mm.uol.com.br:1935/band/bandnews/playlist.m3u8'
-            }]
+        live = []
+
+        # live.append({
+        #         'slug': 'bandnews',
+        #         'name': 'Band News',
+        #         'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BandNews_TV_logo_2010.svg/1200px-BandNews_TV_logo_2010.svg.png',
+        #         'fanart': 'https://observatoriodatelevisao.bol.uol.com.br/wp-content/uploads/2015/03/BandNews.jpg',
+        #         'thumb': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/BandNews_TV_logo_2010.svg/1200px-BandNews_TV_logo_2010.svg.png',
+        #         'playable': 'true',
+        #         'plot': None,
+        #         'id': -1,
+        #         'channel_id': -1,
+        #         'duration': None,
+        #         'streamUrl': 'http://evcv.mm.uol.com.br:1935/band/bandnews/playlist.m3u8'
+        #     })
 
         threads = [
             workers.Thread(self.getGloboplayLive, live),
@@ -379,7 +403,7 @@ class BRplayTVGuideApi():
                         'fanart': result['thumb_cms'],
                         'thumb': logo, #result['channel']['url_snapshot'],
                         'playable': 'true',
-                        'plot': result['day'] + ' - ' + result['title'] + ' | ' + result['subtitle'],
+                        'plot': (result['day'] or '') + ' - ' + (result['title'] or '') + ' | ' + (result['subtitle'] or ''),
                         'programTitle': result['subtitle'],
                         'id': result['id_midia_live_play'],
                         'channel_id': result['channel']['id_globo_videos'],
@@ -510,16 +534,21 @@ class BRplayTVGuideApi():
 
 
     channel_programs = {}
-    def getGuideFromOiPlay(self, channel_info, tvdate):
+    def getGuideFromOiPlay(self, channel_info, original_date):
 
         channel_name = channel_info['name']
-
-        tvdate = tvdate - self.getUtcDelta() - datetime.timedelta(hours=-3)
-        tvdatebefore = tvdate - self.getUtcDelta() - datetime.timedelta(hours=-3) - datetime.timedelta(days=1)
-
         channel_name = channel_name.lower().replace(' rj', '').replace('studio universal', 'universal channel')
-        date = datetime.datetime.strftime(tvdate, '%d-%m-%Y')
-        datebefore = datetime.datetime.strftime(tvdatebefore, '%d-%m-%Y')
+
+        xbmc.log("Finding guide for channel: '%s' and date: '%s'" % (channel_name, original_date))
+
+        summertime = True
+        gmtOffset = 2 if summertime else 3
+
+        tvdate = original_date - self.getUtcDelta() - datetime.timedelta(hours=gmtOffset) + datetime.timedelta(hours=20)
+        tvdatebefore = original_date - self.getUtcDelta() - datetime.timedelta(hours=gmtOffset) - datetime.timedelta(hours=4)
+
+        date = datetime.datetime.strftime(tvdate, '%Y-%m-%d %H:%M')
+        datebefore = datetime.datetime.strftime(tvdatebefore, '%Y-%m-%d %H:%M')
 
         if len(self.channel_programs) > 0:
             if channel_name in self.channel_programs and date in self.channel_programs[channel_name]:
@@ -529,41 +558,20 @@ class BRplayTVGuideApi():
                 xbmc.log("Channel program data not found")
                 return []
 
-        xbmc.log("Fetching channel program data from source")
+        xbmc.log("Fetching channel program data from source for date '%s'. From: '%s' to '%s'" % (original_date, datebefore, date))
 
-        url = 'https://www.oiplay.tv/guide'
-        response, cookies = self.getHtml(url)
-        csrf_name = re.search(r'<meta name="csrf-param" content="([^"]+)">', response).group(1)
-        csrf_token = re.search(r'<meta name="csrf-token" content="([^"]+)">', response).group(1)
+        url = 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/v2/epg-items/search'
 
-        response, dummy = self.getHtml(url, headers={
-            'Cookie': cookies,
+        response = self.getJson(url, headers={
             'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Host': 'www.oiplay.tv',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36',
-            'X-Requested-With': 'XMLHttpRequest'},
-                                         post=urllib.urlencode({
-                                 csrf_name: csrf_token,
-                                 'd': date
-                             }))
+            'Content-Type': 'application/json',
+            'X-Affiliate-Id': '15'},
+                             post={
+                                 'FilterTimeStart': datebefore,
+                                 'FilterTimeEnd': date
+                             })
 
-        responsebefore, dummy = self.getHtml(url, headers={
-            'Cookie': cookies,
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Host': 'www.oiplay.tv',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36',
-            'X-Requested-With': 'XMLHttpRequest'},
-                                         post=urllib.urlencode({
-                                 csrf_name: csrf_token,
-                                 'd': datebefore
-                             }))
-
-        response_json = json.loads(response)
-        responsebefore_json = json.loads(responsebefore)
-
-        guide = responsebefore_json['guide'] + response_json['guide']
+        guide = response['Data']
 
         channels = [channel['name'].lower() for channel in self.channels()]
         # channels.append('universal channel')
@@ -572,7 +580,14 @@ class BRplayTVGuideApi():
                 channels.append(channel.replace(' rj', ''))
 
         for guide_channel in guide:
-            guide_channel_name = guide_channel['call_letter'].lower().replace(' hd', '').replace('+ globosat', 'mais globosat').replace('off', 'canal off').replace('universal channel', 'universal')
+            guide_channel_name = guide_channel['TvStationName'].lower().replace(' hd', '')\
+                .replace('+ globosat', 'mais globosat')\
+                .replace('off', 'canal off')\
+                .replace('universal channel', 'universal')\
+                .replace('globo news', 'globonews')\
+                .replace('sportv2', 'sportv 2')\
+                .replace('sportv3', 'sportv 3')\
+                .replace('globo rio de janeiro', 'globo')
 
             if not guide_channel_name in channels:
                 continue
@@ -580,19 +595,19 @@ class BRplayTVGuideApi():
             #channel_logo = guide_channel['image']
             date_programs = self.channel_programs[guide_channel_name] if guide_channel_name in self.channel_programs else {}
             programs = date_programs[date] if date in date_programs else []
-            for schedule in guide_channel['schedule']:
-                program_thumb = schedule['program']['image_medium'] if 'placeholder' not in schedule['program']['image_medium'] else None
-                program_poster = schedule['program']['image_poster'] if 'image_poster' in schedule['program'] else None
-                program_fanart = schedule['program']['image_backdrop'] if 'image_backdrop' in schedule['program'] else None
-                program_name = schedule['program']['name'] if 'name' in schedule['program'] else 'No Name'
-                program_genre = schedule['program']['sub_category'] if 'sub_category' in schedule['program'] else 'No Genre'
-                episode_description = schedule['episode']['description'] if 'description' in schedule['program'] else 'No Decription'
+            for schedule in guide_channel['Events']:
+                program_thumb = schedule['AssetUrl']
+                program_poster = schedule['TVStationLogoUrl']
+                program_fanart = schedule['AssetUrl']
+                program_name = schedule['Title']
+                program_genre = schedule['Genres'][0] if 'Genres' in schedule and len(schedule['Genres']) > 0 else 'No Genre'
+                episode_description = schedule['LongSynopsis']
 
-                start_date = schedule['start_date']
-                end_date = schedule['end_date']
+                start_date = schedule['TimeStart']
+                end_date = schedule['TimeEnd']
 
-                beginTime = self.strptimeWorkaround(start_date) + datetime.timedelta(hours=3)
-                endTime = self.strptimeWorkaround(end_date) + datetime.timedelta(hours=3)
+                beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%d %H:%M') + datetime.timedelta(hours=gmtOffset)
+                endTime = self.strptimeWorkaround(end_date, format='%Y-%m-%d %H:%M') + datetime.timedelta(hours=gmtOffset)
 
                 programs.append({
                     "title": program_name,
