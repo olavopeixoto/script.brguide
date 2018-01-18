@@ -226,25 +226,6 @@ class BRplayTVGuideApi():
         else:
             return []
 
-        # headers.update({'Accept-Encoding': 'gzip'})
-        # request = urllib2.Request(url, data=post, headers=headers)
-        # response = urllib2.urlopen(request)
-        # data = response.read()
-        #
-        # try:
-        #     encoding = response.info().getheader('Content-Encoding')
-        # except:
-        #     encoding = None
-        # if encoding == 'gzip':
-        #     data = gzip.GzipFile(fileobj=StringIO.StringIO(data)).read()
-        #
-        # response.close()
-        #
-        # if 'application/json' in response.headers.get('content-type'):
-        #     return json.loads(data)
-        # else:
-        #     return []
-
     def getLiveChannels(self):
 
         live = []
@@ -541,8 +522,7 @@ class BRplayTVGuideApi():
 
         xbmc.log("Finding guide for channel: '%s' and date: '%s'" % (channel_name, original_date))
 
-        summertime = True
-        gmtOffset = 2 if summertime else 3
+        gmtOffset = 3
 
         tvdate = original_date - self.getUtcDelta() - datetime.timedelta(hours=gmtOffset) + datetime.timedelta(hours=20)
         tvdatebefore = original_date - self.getUtcDelta() - datetime.timedelta(hours=gmtOffset) - datetime.timedelta(hours=4)
@@ -596,12 +576,12 @@ class BRplayTVGuideApi():
             date_programs = self.channel_programs[guide_channel_name] if guide_channel_name in self.channel_programs else {}
             programs = date_programs[date] if date in date_programs else []
             for schedule in guide_channel['Events']:
-                program_thumb = schedule['AssetUrl']
+                program_thumb = schedule['AssetUrl'] if 'AssetUrl' in schedule else None
                 program_poster = schedule['TVStationLogoUrl']
-                program_fanart = schedule['AssetUrl']
+                program_fanart = schedule['AssetUrl'] if 'AssetUrl' in schedule else None
                 program_name = schedule['Title']
                 program_genre = schedule['Genres'][0] if 'Genres' in schedule and len(schedule['Genres']) > 0 else 'No Genre'
-                episode_description = schedule['LongSynopsis']
+                episode_description = schedule['LongSynopsis'] if 'LongSynopsis' in schedule else ''
 
                 start_date = schedule['TimeStart']
                 end_date = schedule['TimeEnd']
