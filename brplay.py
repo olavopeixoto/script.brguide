@@ -567,7 +567,7 @@ class BRplayTVGuideApi():
                 .replace('globo news', 'globonews')\
                 .replace('sportv2', 'sportv 2')\
                 .replace('sportv3', 'sportv 3')\
-                .replace('globo rio de janeiro', 'globo')
+                .replace('globo rio', 'globo')
 
             if not guide_channel_name in channels:
                 continue
@@ -578,6 +578,7 @@ class BRplayTVGuideApi():
             for schedule in guide_channel['Events']:
                 program_thumb = schedule['AssetUrl'] if 'AssetUrl' in schedule else None
                 program_poster = schedule['TVStationLogoUrl']
+                channel_logo = program_poster
                 program_fanart = schedule['AssetUrl'] if 'AssetUrl' in schedule else None
                 program_name = schedule['Title']
                 program_genre = schedule['Genres'][0] if 'Genres' in schedule and len(schedule['Genres']) > 0 else 'No Genre'
@@ -594,6 +595,7 @@ class BRplayTVGuideApi():
                     "description": program_genre + u' - ' + episode_description,
                     "begin": beginTime,
                     "end": endTime,
+                    "logo": channel_logo,
                     "live_poster": program_poster,
                     "thumbnail": program_thumb,
                     "thumbnail_hd": program_fanart,
