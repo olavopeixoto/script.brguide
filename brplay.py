@@ -41,6 +41,7 @@ COMBATE_LIVE_URL = 'http://api.simulcast.globosat.tv/combate'
 PREMIERE_LIVE_JSON = 'http://globosatplay.globo.com/premierefc/ao-vivo/add-on/jogos-ao-vivo/520142353f8adb4c90000008.json'
 THUMBS_URL = 'https://s01.video.glbimg.com/x720/%s.jpg'
 
+
 class BRplayTVGuideApi():
     def __init__(self):
         self.channelList = []
@@ -68,7 +69,7 @@ class BRplayTVGuideApi():
 
             sysmeta = urllib.quote_plus(json.dumps(meta))
 
-            if not 'streamUrl' in i:
+            if 'streamUrl' not in i:
                 id_globo_videos = i['id']
                 brplayprovider = i['brplayprovider'] if 'brplayprovider' in i else None
                 isFolder = i['isFolder'] == 'true' if 'isFolder' in i else False
@@ -209,6 +210,8 @@ class BRplayTVGuideApi():
 
         headers.update({'Accept-Encoding': 'gzip'})
 
+        xbmc.log("Request JSON - URL: %s | Data: %s | Headers: %s" % (url, post, headers))
+
         if post:
             response = requests.post(url,
                           data=json.dumps(post),
@@ -287,6 +290,8 @@ class BRplayTVGuideApi():
             'live': True,
             'channel_id': 196,
             'duration': None,
+            'livefeed': 'true',
+            'affiliate': 'lat=-22.970722&long=-43.182365',
             'brplayprovider': 'globoplay'
         })
 
