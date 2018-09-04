@@ -38,7 +38,7 @@ GLOBOSAT_API_URL = 'http://api.vod.globosat.tv/globosatplay'
 GLOBOSAT_API_AUTHORIZATION = 'token b4b4fb9581bcc0352173c23d81a26518455cc521'
 GLOBOSAT_API_CHANNELS = GLOBOSAT_API_URL + '/channels.json?page=%d'
 COMBATE_LIVE_URL = 'http://api.simulcast.globosat.tv/combate'
-PREMIERE_LIVE_JSON = 'http://globosatplay.globo.com/premierefc/ao-vivo/add-on/jogos-ao-vivo/520142353f8adb4c90000008.json'
+PREMIERE_24H_SIMULCAST = 'https://api-simulcast.globosat.tv/v1/premiereplay/'
 THUMBS_URL = 'https://s01.video.glbimg.com/x720/%s.jpg'
 
 
@@ -60,7 +60,7 @@ class BRplayTVGuideApi():
         systime = (datetime.datetime.utcnow()).strftime('%Y%m%d%H%M%S%f')
 
         for i in list:
-            meta = dict((k, v) for k, v in i.iteritems() if not v == '0')
+            meta = i #dict((k, v) for k, v in i.iteritems() if not v == '0')
             meta.update({'mediatype': 'video'})
             meta.update({'playcount': 0, 'overlay': 6})
             meta.update({'duration': i['duration']}) if 'duration' in i else None
@@ -247,10 +247,40 @@ class BRplayTVGuideApi():
         #         'streamUrl': 'http://evcv.mm.uol.com.br:1935/band/bandnews/playlist.m3u8'
         #     })
 
+        live.append({
+            'slug': 'redetv',
+            'name': 'RedeTV!',
+            'logo': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
+            'fanart': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
+            'thumb': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
+            'playable': 'true',
+            'plot': None,
+            'id': -2,
+            'channel_id': -2,
+            'duration': None,
+            'streamUrl': 'http://evpp.mm.uol.com.br/redetv1/redetv1/playlist.m3u8'
+        })
+
+        live.append({
+            'slug': 'futura',
+            'name': 'Futura',
+            'fanart': 'http://static.futuraplay.org/img/og-image.jpg',
+            'thumb': 'https://live-thumbs.video.globo.com/futura24ha/snapshot/',
+            'logo': 'http://static.futuraplay.org/img/futura_tracobranco.png',
+            'playable': 'true',
+            'id': '4500346',
+            'channel_id': 1985,
+            'live': True,
+            'livefeed': 'false', # use vod player
+            'brplayprovider': 'globoplay',
+            'anonymous': True
+        })
+
         threads = [
             workers.Thread(self.getGloboplayLive, live),
             workers.Thread(self.getGlobosatLiveChannels, live),
             workers.Thread(self.getGlobosatPremiumLiveChannels, live),
+            workers.Thread(self.getPremiereFcLiveChannel, live),
         ]
         [i.start() for i in threads]
         [i.join() for i in threads]
@@ -335,6 +365,40 @@ class BRplayTVGuideApi():
 
 ###### GLOBOSAT PLAY ############
 
+    def getPremiereFcLiveChannel(self):
+
+        headers = {'Authorization': GLOBOSAT_API_AUTHORIZATION, 'Accept-Encoding': 'gzip'}
+        live_channels = self.getJson(PREMIERE_24H_SIMULCAST, headers=headers)
+
+        live = []
+
+        for channel_data in live_channels:
+            live_channel = {
+                'slug': 'premiere-fc',
+                'name': 'Premiere Clubes',
+                'studio': 'Premiere Clubes',
+                'title': channel_data['description'],
+                'tvshowtitle': channel_data['name'],
+                'sorttitle': 'Premiere Clubes',
+                'logo': 'https://s2.glbimg.com/WIdwvWihBQYoarSEGxCQuNf-caQ=/s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/7d/a4/19679ec6ed7a5eb860cd584e0cad.png',
+                'clearlogo': 'https://s2.glbimg.com/WIdwvWihBQYoarSEGxCQuNf-caQ=/s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/7d/a4/19679ec6ed7a5eb860cd584e0cad.png',
+                'fanart': channel_data['image_url'],
+                'thumb': channel_data['snapshot_url'],
+                'playable': 'true',
+                'plot': channel_data['description'],
+                'id': int(channel_data['media_globovideos_id']),
+                'channel_id': int(channel_data['channel']['globovideos_id']),
+                'duration': int(channel_data['duration'] or 0) / 1000,
+                'isFolder': 'false',
+                'live': channel_data['live'],
+                'livefeed': 'true',
+                'brplayprovider': 'globosat'
+            }
+
+            live.append(live_channel)
+
+        return live
+
     def getGlobosatLiveChannels(self):
 
         live = []
@@ -360,8 +424,8 @@ class BRplayTVGuideApi():
                             'logo': result['color_logo'],
                             'fanart': fanart,
                             'thumb': result['color_logo'],
-                            'playable': 'true', #json['status'] == 'ativa',
-                            'plot': None, #'.join(reversed(json['programacao'].values())) if json['programacao'] != None else '',
+                            'playable': 'true',
+                            'plot': None,
                             'id': transmission['items'][0]['id_globo_videos'],
                             'channel_id': transmission['id_channel'],
                             'id_globo': transmission['id_globo'],
@@ -387,7 +451,7 @@ class BRplayTVGuideApi():
                         'name': result['channel']['title'],
                         'logo': logo,
                         'fanart': result['thumb_cms'],
-                        'thumb': logo, #result['channel']['url_snapshot'],
+                        'thumb': logo,
                         'playable': 'true',
                         'plot': (result['day'] or '') + ' - ' + (result['title'] or '') + ' | ' + (result['subtitle'] or ''),
                         'programTitle': result['subtitle'],
