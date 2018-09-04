@@ -268,12 +268,26 @@ class BRplayTVGuideApi():
             'thumb': 'https://live-thumbs.video.globo.com/futura24ha/snapshot/',
             'logo': 'http://static.futuraplay.org/img/futura_tracobranco.png',
             'playable': 'true',
-            'id': '4500346',
+            'id': 4500346,
             'channel_id': 1985,
             'live': True,
             'livefeed': 'false', # use vod player
             'brplayprovider': 'globoplay',
             'anonymous': True
+        })
+
+        live.append({
+            'slug': 'sbt',
+            'name': 'SBT',
+            'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/SBT_logo.svg/1024px-SBT_logo.svg.png',
+            'fanart': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
+            'thumb': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
+            'playable': 'true',
+            'plot': None,
+            'id': -3,
+            'channel_id': -3,
+            'duration': None,
+            'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=sjRIQBAQj-0'
         })
 
         threads = [
