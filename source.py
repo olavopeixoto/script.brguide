@@ -810,7 +810,7 @@ class Source(object):
 
 class BRplaySource(Source):
 
-    KEY = 'brplay' if ADDON.getSetting('fetch.oiplay') == 'true' else 'broiplay'
+    KEY = 'brplay'
 
     def __init__(self, addon):
         self.date = datetime.datetime.today()

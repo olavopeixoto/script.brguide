@@ -244,58 +244,111 @@ class BRplayTVGuideApi():
         #         'id': -1,
         #         'channel_id': -1,
         #         'duration': None,
-        #         'streamUrl': 'http://evcv.mm.uol.com.br:1935/band/bandnews/playlist.m3u8'
+        #         'streamUrl': 'https://evpp.mm.uol.com.br/geob_band/bandnewstv/playlist.m3u8'
         #     })
 
-        live.append({
-            'slug': 'redetv',
-            'name': 'RedeTV!',
-            'logo': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
-            'fanart': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
-            'thumb': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
-            'playable': 'true',
-            'plot': None,
-            'id': -2,
-            'channel_id': -2,
-            'duration': None,
-            'streamUrl': 'http://evpp.mm.uol.com.br/redetv1/redetv1/playlist.m3u8'
-        })
+        if ADDON.getSetting('channels.redetv') == 'true':
+            live.append({
+                'slug': 'redetv',
+                'name': 'RedeTV!',
+                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/1a4956aef26886c9b83a4f28772bf8e8112f60ff.png',
+                'fanart': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
+                'thumb': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
+                'playable': 'true',
+                'plot': None,
+                'id': -2,
+                'channel_id': -2,
+                'duration': None,
+                'streamUrl': 'http://evpp.mm.uol.com.br/redetv1/redetv1/playlist.m3u8'
+            })
 
-        live.append({
-            'slug': 'futura',
-            'name': 'Futura',
-            'fanart': 'http://static.futuraplay.org/img/og-image.jpg',
-            'thumb': 'https://live-thumbs.video.globo.com/futura24ha/snapshot/',
-            'logo': 'http://static.futuraplay.org/img/futura_tracobranco.png',
-            'playable': 'true',
-            'id': 4500346,
-            'channel_id': 1985,
-            'live': True,
-            'livefeed': 'false', # use vod player
-            'brplayprovider': 'globoplay',
-            'anonymous': True
-        })
+        if ADDON.getSetting('channels.globoplay') == 'true':
+            live.append({
+                'slug': 'futura',
+                'name': 'Futura',
+                'fanart': 'http://static.futuraplay.org/img/og-image.jpg',
+                'thumb': 'https://live-thumbs.video.globo.com/futura24ha/snapshot/',
+                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/e2594585531489e674655d6e1b49a5bb59d9c7a0.png',
+                'playable': 'true',
+                'id': 4500346,
+                'channel_id': 1985,
+                'live': True,
+                'livefeed': 'false', # use vod player
+                'brplayprovider': 'globoplay',
+                'anonymous': True
+            })
 
-        live.append({
-            'slug': 'sbt',
-            'name': 'SBT',
-            'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/SBT_logo.svg/1024px-SBT_logo.svg.png',
-            'fanart': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
-            'thumb': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
-            'playable': 'true',
-            'plot': None,
-            'id': -3,
-            'channel_id': -3,
-            'duration': None,
-            'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=sjRIQBAQj-0'
-        })
+        if ADDON.getSetting('channels.youtube') == 'true':
+            live.append({
+                'slug': 'sbt',
+                'name': 'SBT',
+                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/85890f17ebaa8451d4eaab8719b3b96a43d9c676.png',
+                'fanart': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
+                'thumb': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
+                'playable': 'true',
+                'plot': None,
+                'id': -3,
+                'channel_id': -3,
+                'duration': None,
+                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=' + ADDON.getSetting('youtube.sbt.id')
+            })
 
-        threads = [
-            workers.Thread(self.getGloboplayLive, live),
-            workers.Thread(self.getGlobosatLiveChannels, live),
-            workers.Thread(self.getGlobosatPremiumLiveChannels, live),
-            workers.Thread(self.getPremiereFcLiveChannel, live),
-        ]
+            live.append({
+                'slug': 'justica',
+                'name': u'TV JUSTIÇA',
+                'logo': 'http://oisa.tmsimg.com/h4/NowShowing/76237/s76237_h4_aa.png',
+                'fanart': 'https://yt3.ggpht.com/a-/ACSszfHWaYyZbKI54Ws8EsUYOZVLcc_ID2R_LlykCw=s900-mo-c-c0xffffffff-rj-k-no',
+                'thumb': 'https://yt3.ggpht.com/a-/ACSszfHWaYyZbKI54Ws8EsUYOZVLcc_ID2R_LlykCw=s900-mo-c-c0xffffffff-rj-k-no',
+                'playable': 'true',
+                'plot': None,
+                'id': -4,
+                'channel_id': -4,
+                'duration': None,
+                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=3-7mJteOsxY'
+            })
+
+            live.append({
+                'slug': 'senado',
+                'name': 'TV Senado',
+                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/d1d54ccbacb5c229ad5635b7b67abdd7215d03ac.png',
+                'fanart': 'https://yt3.ggpht.com/a-/ACSszfF-djZe6A1gCCr3q_aUQosHwe3dyTTHVFrXcw=s900-mo-c-c0xffffffff-rj-k-no',
+                'thumb': 'https://yt3.ggpht.com/a-/ACSszfF-djZe6A1gCCr3q_aUQosHwe3dyTTHVFrXcw=s900-mo-c-c0xffffffff-rj-k-no',
+                'playable': 'true',
+                'plot': None,
+                'id': -5,
+                'channel_id': -5,
+                'duration': None,
+                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=Duvz4PaR7Gw'
+            })
+
+            live.append({
+                'slug': 'shoptime',
+                'name': 'Shoptime',
+                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/32068ac2f5df236bb0731b448235923d15433df3.png',
+                'fanart': 'https://images-shoptime.b2w.io/zion/manifest/icons/5d7e972cec3c839ef0f8ab8cdd7cdb42.opengraph-image.png',
+                'thumb': 'https://images-shoptime.b2w.io/zion/manifest/icons/5d7e972cec3c839ef0f8ab8cdd7cdb42.opengraph-image.png',
+                'playable': 'true',
+                'plot': None,
+                'id': -6,
+                'channel_id': -6,
+                'duration': None,
+                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=qJ1QpbHn2Bk'
+            })
+
+        threads = []
+
+        if ADDON.getSetting('channels.globoplay') == 'true':
+            threads.append(workers.Thread(self.getGloboplayLive, live))
+
+        if ADDON.getSetting('channels.globosatplay') == 'true':
+            threads.append(workers.Thread(self.getGlobosatLiveChannels, live))
+
+        if ADDON.getSetting('channels.premium') == 'true':
+            threads.append(workers.Thread(self.getGlobosatPremiumLiveChannels, live))
+
+        if ADDON.getSetting('channels.premierefc') == 'true':
+            threads.append(workers.Thread(self.getPremiereFcLiveChannel, live))
+
         [i.start() for i in threads]
         [i.join() for i in threads]
 
@@ -562,7 +615,6 @@ class BRplayTVGuideApi():
 
         return programs
 
-
     def getSportvsPrograms(self, channel_name, tvdate):
         if tvdate.date() != datetime.datetime.now().today().date():
             return []
@@ -595,23 +647,20 @@ class BRplayTVGuideApi():
 
         return programs
 
-
-
     channel_programs = {}
+
     def getGuideFromOiPlay(self, channel_info, original_date):
 
         channel_name = channel_info['name']
-        channel_name = channel_name.lower().replace(' rj', '').replace('studio universal', 'universal channel')
+        channel_name = channel_name.lower().replace(' rj', '')
 
-        xbmc.log("Finding guide for channel: '%s' and date: '%s'" % (channel_name, original_date))
+        xbmc.log("Finding guide for channel: '%s' and date: '%s'" % (channel_name.encode('utf-8'), original_date))
 
-        gmtOffset = 3
+        tvdate = original_date - self.getUtcDelta() + datetime.timedelta(hours=20)
+        tvdatebefore = original_date - self.getUtcDelta() - datetime.timedelta(hours=4)
 
-        tvdate = original_date - self.getUtcDelta() - datetime.timedelta(hours=gmtOffset) + datetime.timedelta(hours=20)
-        tvdatebefore = original_date - self.getUtcDelta() - datetime.timedelta(hours=gmtOffset) - datetime.timedelta(hours=4)
-
-        date = datetime.datetime.strftime(tvdate, '%Y-%m-%d %H:%M')
-        datebefore = datetime.datetime.strftime(tvdatebefore, '%Y-%m-%d %H:%M')
+        date = datetime.datetime.strftime(tvdate, '%Y-%m-%dT%H:%M:%SZ')
+        datebefore = datetime.datetime.strftime(tvdatebefore, '%Y-%m-%dT%H:%M:%SZ')
 
         if len(self.channel_programs) > 0:
             if channel_name in self.channel_programs and date in self.channel_programs[channel_name]:
@@ -623,18 +672,9 @@ class BRplayTVGuideApi():
 
         xbmc.log("Fetching channel program data from source for date '%s'. From: '%s' to '%s'" % (original_date, datebefore, date))
 
-        url = 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/v2/epg-items/search'
+        url = 'https://apim.oi.net.br/app/oiplay/ummex/v1/epg?starttime=%s&endtime=%s' % (datebefore, date)
 
-        response = self.getJson(url, headers={
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-Affiliate-Id': '15'},
-                             post={
-                                 'FilterTimeStart': datebefore,
-                                 'FilterTimeEnd': date
-                             })
-
-        guide = response['Data']
+        guide = self.getJson(url, headers={'Accept': 'application/json'})
 
         channels = [channel['name'].lower() for channel in self.channels()]
         # channels.append('universal channel')
@@ -643,14 +683,16 @@ class BRplayTVGuideApi():
                 channels.append(channel.replace(' rj', ''))
 
         for guide_channel in guide:
-            guide_channel_name = guide_channel['TvStationName'].lower().replace(' hd', '')\
+            guide_channel_name = guide_channel['title'].lower().replace(' hd', '')\
                 .replace('+ globosat', 'mais globosat')\
                 .replace('off', 'canal off')\
-                .replace('universal channel', 'universal')\
+                .replace('universal tv', 'universal')\
                 .replace('globo news', 'globonews')\
                 .replace('sportv2', 'sportv 2')\
                 .replace('sportv3', 'sportv 3')\
-                .replace('globo rio', 'globo')
+                .replace('globo rio', 'globo')\
+                .replace('redetv! rio de janeiro', 'redetv!')\
+                .replace('sbt rio', 'sbt')
 
             if not guide_channel_name in channels:
                 continue
@@ -658,20 +700,22 @@ class BRplayTVGuideApi():
             #channel_logo = guide_channel['image']
             date_programs = self.channel_programs[guide_channel_name] if guide_channel_name in self.channel_programs else {}
             programs = date_programs[date] if date in date_programs else []
-            for schedule in guide_channel['Events']:
-                program_thumb = schedule['AssetUrl'] if 'AssetUrl' in schedule else None
-                program_poster = schedule['TVStationLogoUrl']
+            program_poster = guide_channel['positiveLogoUrl']
+            for schedule in guide_channel['schedules']:
+                program = schedule['program']
+                images = program['programImages'] if 'programImages' in program else None
+                program_thumb = images[0]['url'] if len(images) > 0 else None
                 channel_logo = program_poster
-                program_fanart = schedule['AssetUrl'] if 'AssetUrl' in schedule else None
-                program_name = schedule['Title']
-                program_genre = schedule['Genres'][0] if 'Genres' in schedule and len(schedule['Genres']) > 0 else 'No Genre'
-                episode_description = schedule['LongSynopsis'] if 'LongSynopsis' in schedule else ''
+                program_fanart = program_thumb
+                program_name = program['title']
+                program_genre = program['programType'] or u''
+                episode_description = program['synopsis'] if 'synopsis' in program and program['synopsis'] else u''
 
-                start_date = schedule['TimeStart']
-                end_date = schedule['TimeEnd']
+                start_date = schedule['startTimeUtc']
+                duration = schedule['durationSeconds']
 
-                beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%d %H:%M') + datetime.timedelta(hours=gmtOffset)
-                endTime = self.strptimeWorkaround(end_date, format='%Y-%m-%d %H:%M') + datetime.timedelta(hours=gmtOffset)
+                beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%dT%H:%M:%SZ') + self.getUtcDelta()
+                endTime = beginTime + datetime.timedelta(seconds=duration)
 
                 programs.append({
                     "title": program_name,

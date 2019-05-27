@@ -42,6 +42,7 @@ class Service(object):
 
         self.database.close(None)
 
+
 try:
     ADDON = xbmcaddon.Addon(id = 'script.brguide')
     if ADDON.getSetting('cache.data.on.xbmc.startup') == 'true':

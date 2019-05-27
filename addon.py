@@ -19,12 +19,15 @@
 #
 import buggalo
 import gui
+import xbmc
 
 buggalo.SUBMIT_URL = 'http://tommy.winther.nu/exception/submit.php'
 
 try:
+    xbmc.log("STARTING...");
     w = gui.TVGuide()
     w.doModal()
+    xbmc.log("QUITTING...");
     del w
 
 except Exception:
