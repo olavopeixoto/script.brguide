@@ -706,28 +706,31 @@ class BRplayTVGuideApi():
                 images = program['programImages'] if 'programImages' in program else None
                 program_thumb = images[0]['url'] if len(images) > 0 else None
                 channel_logo = program_poster
-                program_fanart = program_thumb
-                program_name = program['title']
-                program_genre = program['programType'] or u''
+                program_fanart = images[1]['url'] if len(images) > 1 else None
+                program_name = program['seriesTitle']
+                program_genre = program['genres'] or u''
                 episode_description = program['synopsis'] if 'synopsis' in program and program['synopsis'] else u''
+                seasonNumber = program['seasonNumber']
+                episodeNumber = program['episodeNumber']
+                episodeTitle = u'T' + str(seasonNumber) + u' E' + str(episodeNumber) + u' ' + program['title'] + '\n' if program['seriesTitle'] != program['title'] else u''
 
                 start_date = schedule['startTimeUtc']
                 duration = schedule['durationSeconds']
 
-                beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%dT%H:%M:%SZ') + self.getUtcDelta()
+                beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%dT%H:%M:%SZ')
                 endTime = beginTime + datetime.timedelta(seconds=duration)
 
                 programs.append({
                     "title": program_name,
-                    "description": program_genre + u' - ' + episode_description,
+                    "description": episodeTitle + episode_description + u'\n(' + program_genre + u')',
                     "begin": beginTime,
                     "end": endTime,
                     "logo": channel_logo,
                     "live_poster": program_poster,
                     "thumbnail": program_thumb,
-                    "thumbnail_hd": program_fanart,
+                    "thumbnail_hd": program_thumb,
                     'images_sixteenbynine': {
-                        #'large': program_fanart,
+                        'large': program_fanart,
                         'small': program_thumb
                     }
                 })
