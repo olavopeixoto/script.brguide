@@ -31,7 +31,7 @@ import buggalo
 
 import streaming
 
-DEBUG = False
+DEBUG = True
 
 MODE_EPG = 'EPG'
 MODE_TV = 'TV'
@@ -114,6 +114,8 @@ class TVGuide(xbmcgui.WindowXML):
     C_MAIN_OSD_DESCRIPTION = 6003
     C_MAIN_OSD_CHANNEL_LOGO = 6004
     C_MAIN_OSD_CHANNEL_TITLE = 6005
+    C_MAIN_OSD_THUMB = 6006
+    C_MAIN_OSD_CURRENT_CHANNEL_LOGO = 6007
 
     def __new__(cls):
         return super(TVGuide, cls).__new__(cls, 'script-tvguide-main.xml', ADDON.getAddonInfo('path'))
@@ -147,6 +149,8 @@ class TVGuide(xbmcgui.WindowXML):
         self.viewStartDate = datetime.datetime.today()
         self.viewStartDate -= datetime.timedelta(minutes=self.viewStartDate.minute % 30,
                                                  seconds=self.viewStartDate.second)
+
+        self.epgMode = True
 
     def migrateSettings(self):
         if ADDON.getSetting('source') == 'ONTV.dk':
@@ -205,7 +209,8 @@ class TVGuide(xbmcgui.WindowXML):
 
     @buggalo.buggalo_try_except({'method': 'TVGuide.onAction'})
     def onAction(self, action):
-        debug('Mode is: %s' % self.mode)
+        if action.getId() == 0:
+            return
 
         if self.mode == MODE_TV:
             self.onActionTVMode(action)
@@ -217,9 +222,21 @@ class TVGuide(xbmcgui.WindowXML):
     def onActionTVMode(self, action):
         if action.getId() == ACTION_PAGE_UP:
             self._channelUp()
+            self._showOsd()
 
         elif action.getId() == ACTION_PAGE_DOWN:
             self._channelDown()
+            self._showOsd()
+
+        elif action.getId() == ACTION_UP:
+            self.osdChannel = self.database.getNextChannel(self.currentChannel)
+            self.osdProgram = self.database.getCurrentProgram(self.osdChannel)
+            self._showOsd()
+
+        elif action.getId() == ACTION_DOWN:
+            self.osdChannel = self.database.getPreviousChannel(self.currentChannel)
+            self.osdProgram = self.database.getCurrentProgram(self.osdChannel)
+            self._showOsd()
 
         elif not self.osdEnabled:
             pass  # skip the rest of the actions
@@ -227,8 +244,10 @@ class TVGuide(xbmcgui.WindowXML):
         elif action.getId() in [ACTION_PARENT_DIR, KEY_NAV_BACK, KEY_CONTEXT_MENU, ACTION_PREVIOUS_MENU]:
             self.onRedrawEPG(self.channelIdx, self.viewStartDate)
 
-        elif action.getId() == ACTION_SHOW_INFO:
-            self._showOsd()
+        elif action.getId() in [ACTION_SHOW_INFO, ACTION_SELECT_ITEM]:
+            if not self.epgMode:
+                self._showOsd()
+            self.epgMode = False
 
     def onActionOSDMode(self, action):
         if action.getId() == ACTION_SHOW_INFO:
@@ -236,7 +255,6 @@ class TVGuide(xbmcgui.WindowXML):
 
         elif action.getId() in [ACTION_PARENT_DIR, KEY_NAV_BACK, KEY_CONTEXT_MENU, ACTION_PREVIOUS_MENU]:
             self._hideOsd()
-            self.onRedrawEPG(self.channelIdx, self.viewStartDate)
 
         elif action.getId() == ACTION_SELECT_ITEM:
             if self.playChannel(self.osdChannel):
@@ -251,12 +269,12 @@ class TVGuide(xbmcgui.WindowXML):
             self._showOsd()
 
         elif action.getId() == ACTION_UP:
-            self.osdChannel = self.database.getPreviousChannel(self.osdChannel)
+            self.osdChannel = self.database.getNextChannel(self.osdChannel)
             self.osdProgram = self.database.getCurrentProgram(self.osdChannel)
             self._showOsd()
 
         elif action.getId() == ACTION_DOWN:
-            self.osdChannel = self.database.getNextChannel(self.osdChannel)
+            self.osdChannel = self.database.getPreviousChannel(self.osdChannel)
             self.osdProgram = self.database.getCurrentProgram(self.osdChannel)
             self._showOsd()
 
@@ -537,6 +555,8 @@ class TVGuide(xbmcgui.WindowXML):
 
     def playChannel(self, channel):
         self.currentChannel = channel
+        self.osdChannel = channel
+        self.osdProgram = self.database.getCurrentProgram(channel)
         wasPlaying = self.player.isPlaying()
         url = self.database.getStreamUrl(channel)
         if url:
@@ -554,7 +574,6 @@ class TVGuide(xbmcgui.WindowXML):
                 self._hideEpg()
 
         threading.Timer(1, self.waitForPlayBackStopped).start()
-        self.osdProgram = self.database.getCurrentProgram(self.currentChannel)
 
         return url is not None
 
@@ -565,7 +584,7 @@ class TVGuide(xbmcgui.WindowXML):
                 break
 
         while self.player.isPlaying() and not xbmc.abortRequested and not self.isClosing:
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         self.onPlayBackStopped()
 
@@ -573,27 +592,40 @@ class TVGuide(xbmcgui.WindowXML):
         if not self.osdEnabled:
             return
 
-        if self.mode != MODE_OSD:
+        if self.mode != MODE_OSD or not self.osdChannel:
             self.osdChannel = self.currentChannel
+
+        if self.currentChannel and self.currentChannel.logo:
+            self.setControlImage(self.C_MAIN_OSD_CURRENT_CHANNEL_LOGO, self.currentChannel.logo)
 
         if self.osdProgram is not None:
             self.setControlLabel(self.C_MAIN_OSD_TITLE, '[B]%s[/B]' % self.osdProgram.title)
+
             if self.osdProgram.startDate or self.osdProgram.endDate:
                 self.setControlLabel(self.C_MAIN_OSD_TIME, '[B]%s - %s[/B]' % (
                     self.formatTime(self.osdProgram.startDate), self.formatTime(self.osdProgram.endDate)))
             else:
                 self.setControlLabel(self.C_MAIN_OSD_TIME, '')
+
             self.setControlText(self.C_MAIN_OSD_DESCRIPTION, self.osdProgram.description)
             self.setControlLabel(self.C_MAIN_OSD_CHANNEL_TITLE, self.osdChannel.title)
+
             if self.osdProgram.channel.logo is not None:
                 self.setControlImage(self.C_MAIN_OSD_CHANNEL_LOGO, self.osdProgram.channel.logo)
             else:
                 self.setControlImage(self.C_MAIN_OSD_CHANNEL_LOGO, '')
 
-        self.mode = MODE_OSD
-        self._showControl(self.C_MAIN_OSD)
+            if self.osdProgram.imageSmall is not None:
+                self.setControlImage(self.C_MAIN_OSD_THUMB, self.osdProgram.imageSmall)
+            else:
+                self.setControlImage(self.C_MAIN_OSD_THUMB, 'tvguide-logo-epg.png')
+
+            self.mode = MODE_OSD
+            self._showControl(self.C_MAIN_OSD)
 
     def _hideOsd(self):
+        self.osdChannel = self.currentChannel
+        self.osdProgram = self.database.getCurrentProgram(self.osdChannel)
         self.mode = MODE_TV
         self._hideControl(self.C_MAIN_OSD)
 
@@ -785,6 +817,7 @@ class TVGuide(xbmcgui.WindowXML):
         if not self.player.isPlaying() and not self.isClosing:
             self._hideControl(self.C_MAIN_OSD)
             self.onRedrawEPG(self.channelIdx, self.viewStartDate)
+            self.epgMode = True
 
     def _secondsToXposition(self, seconds):
         return self.epgView.left + (seconds * self.epgView.width / 7200)

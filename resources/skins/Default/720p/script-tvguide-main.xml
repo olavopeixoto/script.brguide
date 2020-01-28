@@ -613,6 +613,15 @@
         <control type="label" id="6000">
             <description>visibility marker for OSD Info bar</description>
         </control>
+        <control type="image" id="6007">
+            <description>Current channel logo</description>
+            <posx>30</posx>
+            <posy>30</posy>
+            <width>240</width>
+            <height>120</height>
+            <aspectratio align="left">keep</aspectratio>
+            <visible>!Control.IsVisible(6000)</visible>
+        </control>
         <control type="group">
             <description>OSD Info bar</description>
             <posx>0</posx>
@@ -620,7 +629,7 @@
             <width>1280</width>
             <height>220</height>
             <visible>!Control.IsVisible(6000)</visible>
-            <animation effect="fade" start="0" end="100" time="500">VisibleChange</animation>
+            <animation effect="fade" start="0" end="100" time="100">VisibleChange</animation>
 
             <control type="image">
                 <posx>0</posx>
@@ -631,15 +640,32 @@
             </control>
 
             <!-- Program description -->
+            <control type="image" id="6006">
+                <description>Program logo / Source logo</description>
+                <posx>30</posx>
+                <posy>30</posy>
+                <width>320</width>
+                <height>160</height>
+                <aspectratio>keep</aspectratio>
+            </control>
+            <control type="image" id="6004">
+                <description>Program channel logo</description>
+                <posx>260</posx>
+                <posy>140</posy>
+                <width>90</width>
+                <height>45</height>
+                <aspectratio align="left">keep</aspectratio>
+            </control>
             <control type="label" id="6001">
                 <description>Program title</description>
-                <posx>30</posx>
+                <posx>380</posx>
                 <posy>10</posy>
-                <width>850</width>
+                <width>630</width>
                 <height>50</height>
                 <label>[B]Title[/B]</label>
                 <textcolor>ffffffff</textcolor>
                 <font>font13</font>
+                <align>left</align>
                 <aligny>center</aligny>
             </control>
             <control type="label" id="6002">
@@ -656,9 +682,9 @@
             </control>
             <control type="textbox" id="6003">
                 <description>Program description</description>
-                <posx>30</posx>
+                <posx>380</posx>
                 <posy>50</posy>
-                <width>1230</width>
+                <width>880</width>
                 <height>149</height>
                 <label>Description</label>
                 <textcolor>ffffffff</textcolor>
@@ -667,17 +693,9 @@
 
                 <autoscroll time="3600" delay="6000" repeat="6000">true</autoscroll>
             </control>
-            <control type="image" id="6004">
-                <description>Program channel logo</description>
-                <posx>1100</posx>
-                <posy>155</posy>
-                <width>160</width>
-                <height>45</height>
-                <aspectratio>keep</aspectratio>
-            </control>
             <control type="label" id="6005">
                 <description>Program channel text</description>
-                <posx>110</posx>
+                <posx>810</posx>
                 <posy>155</posy>
                 <width>160</width>
                 <height>45</height>

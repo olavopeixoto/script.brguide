@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 #      Copyright (C) 2013 Tommy Winther
 #      http://tommy.winther.nu
@@ -230,6 +231,14 @@ class Database(object):
                                         strings(DATABASE_SCHEMA_ERROR_2), strings(DATABASE_SCHEMA_ERROR_3))
 
         return self.conn is not None
+
+    def clearDatabase(self):
+        try:
+            os.unlink(self.databasePath)
+        except OSError:
+            pass
+        except Exception as ex:
+            xbmcgui.Dialog().ok(ADDON.getAddonInfo('name'), ex.message)
 
     def close(self, callback=None):
         self.eventQueue.append([self._close, callback])
@@ -503,6 +512,8 @@ class Database(object):
         return channelList
 
     def getCurrentProgram(self, channel):
+        if not channel:
+            return None
         return self._invokeAndBlockForResult(self._getCurrentProgram, channel)
 
     def _getCurrentProgram(self, channel):
@@ -515,6 +526,10 @@ class Database(object):
         program = None
         now = datetime.datetime.now()
         c = self.conn.cursor()
+
+        sqlite3.register_adapter(datetime.datetime, self.adapt_datetime)
+        sqlite3.register_converter('timestamp', self.convert_datetime)
+
         c.execute('SELECT * FROM programs WHERE channel=? AND source=? AND start_date <= ? AND end_date >= ?',
                   [channel.id, self.source.KEY, now, now])
         row = c.fetchone()
@@ -526,6 +541,8 @@ class Database(object):
         return program
 
     def getNextProgram(self, channel):
+        if not channel:
+            return None
         return self._invokeAndBlockForResult(self._getNextProgram, channel)
 
     def _getNextProgram(self, program):
@@ -543,6 +560,8 @@ class Database(object):
         return nextProgram
 
     def getPreviousProgram(self, channel):
+        if not channel:
+            return None
         return self._invokeAndBlockForResult(self._getPreviousProgram, channel)
 
     def _getPreviousProgram(self, program):
@@ -807,6 +826,7 @@ class Source(object):
             return True
 
         return False
+
 
 class BRplaySource(Source):
 

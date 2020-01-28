@@ -7,7 +7,7 @@
         <setting id="youseetv.category" label="30102" type="labelenum" default="Danske"
                  values="Danske|Filmkanaler|Grundpakken|Mellempakken|Fuldpakken|Nordiske|Engelske|Tyske|Latinske|Slaviske|Tyrkiske|Kurdiske|Arabiske|Asiatiske"
                  visible="false" />
-        <setting id="program.background.enabled" label="30107" type="bool" default="true" visible="eq(-2,0)"/>
+        <setting id="program.background.enabled" label="30107" type="bool" default="true" />
 
         <setting id="xmltv.type" label="30123" type="enum" default="0" lvalues="30124|30125" visible="eq(-3,1)"/>
         <setting id="xmltv.file" label="30103" type="file" visible="eq(-1,0) + eq(-4,1)" />
@@ -20,12 +20,11 @@
         <setting id="channels.premierefc" label="Show Premiere FC Channels" type="bool" default="true" visible="eq(-11,0)" enable="eq(-11,0)" />
         <setting id="channels.redetv" label="Show RedeTV!" type="bool" default="true" visible="eq(-12,0)" enable="eq(-12,0)" />
         <setting id="channels.youtube" label="Show Youtube Channels" type="bool" default="true" visible="eq(-13,0)" enable="eq(-13,0)" />
+        <setting id="channels.adult" label="Show Adult Channels" type="bool" default="true" visible="eq(-15,0)" enable="eq(-14,0)" />
 
-        <setting id="youtube.sbt.id" label="Id Video SBT" type="text" default="CyRgFwOvs5A" />
+        <setting type="lsep" />
 
-        <setting label="30119" type="lsep" />
-
-        <setting label="30108" type="action" action="RunScript($CWD/notification.py)" />
+        <setting id="clear" type="action" label="30104" action="RunScript($CWD/clearcache.py)"/>
     </category>
 
     <category label="30114">

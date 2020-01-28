@@ -44,7 +44,7 @@ class Service(object):
 
 
 try:
-    ADDON = xbmcaddon.Addon(id = 'script.brguide')
+    ADDON = xbmcaddon.Addon(id='script.brguide')
     if ADDON.getSetting('cache.data.on.xbmc.startup') == 'true':
         Service()
 except source.SourceNotConfiguredException:

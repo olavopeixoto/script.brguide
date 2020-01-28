@@ -22,12 +22,12 @@
 #
 # https://docs.google.com/document/d/1_rs5BXklnLqGS6g6eAjevVHsPafv4PXDCi_dAM2b7G0/edit?pli=1
 #
-import xbmcaddon
 import xbmc
 import urllib,datetime,re,urllib2
 import gzip,StringIO
 import workers
 from strings import *
+import youtube
 
 try:
     import json
@@ -40,6 +40,11 @@ GLOBOSAT_API_CHANNELS = GLOBOSAT_API_URL + '/channels.json?page=%d'
 COMBATE_LIVE_URL = 'http://api.simulcast.globosat.tv/combate'
 PREMIERE_24H_SIMULCAST = 'https://api-simulcast.globosat.tv/v1/premiereplay/'
 THUMBS_URL = 'https://s01.video.glbimg.com/x720/%s.jpg'
+
+
+SPORTV_LOGO = 'https://oisa.tmsimg.com/assets/s94567_h3_aa.png'
+SPORTV2_LOGO = 'https://oisa.tmsimg.com/assets/s94568_h3_aa.png'
+SPORTV3_LOGO = 'https://oisa.tmsimg.com/assets/s94570_h3_aa.png'
 
 
 class BRplayTVGuideApi():
@@ -150,10 +155,6 @@ class BRplayTVGuideApi():
 
 
 
-
-
-
-
     def parseDatetime(self, date_string, format):
         import time
         from datetime import datetime
@@ -251,7 +252,7 @@ class BRplayTVGuideApi():
             live.append({
                 'slug': 'redetv',
                 'name': 'RedeTV!',
-                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/1a4956aef26886c9b83a4f28772bf8e8112f60ff.png',
+                'logo': 'https://oisa.tmsimg.com/assets/s103750_h3_aa.png',
                 'fanart': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
                 'thumb': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
                 'playable': 'true',
@@ -268,7 +269,7 @@ class BRplayTVGuideApi():
                 'name': 'Futura',
                 'fanart': 'http://static.futuraplay.org/img/og-image.jpg',
                 'thumb': 'https://live-thumbs.video.globo.com/futura24ha/snapshot/',
-                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/e2594585531489e674655d6e1b49a5bb59d9c7a0.png',
+                'logo': 'https://oisa.tmsimg.com/assets/s20386_h3_aa.png',
                 'playable': 'true',
                 'id': 4500346,
                 'channel_id': 1985,
@@ -278,11 +279,10 @@ class BRplayTVGuideApi():
                 'anonymous': True
             })
 
-        if ADDON.getSetting('channels.youtube') == 'true':
             live.append({
                 'slug': 'sbt',
-                'name': 'SBT',
-                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/85890f17ebaa8451d4eaab8719b3b96a43d9c676.png',
+                'name': 'SBT Rio',
+                'logo': 'https://www.sbt.com.br/assets/images/logo-sbt.png',
                 'fanart': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
                 'thumb': 'https://i.ytimg.com/vi/Sut2YB6U5fk/maxresdefault.jpg',
                 'playable': 'true',
@@ -290,13 +290,30 @@ class BRplayTVGuideApi():
                 'id': -3,
                 'channel_id': -3,
                 'duration': None,
-                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=' + ADDON.getSetting('youtube.sbt.id')
+                # 'streamUrl': 'plugin://plugin.video.youtube/play/?channel_id=UCsRfBAspa72ExrsN347W2xg&live=1'
+                'streamUrl': youtube.geturl('https://www.youtube.com/channel/UCsRfBAspa72ExrsN347W2xg/live')
             })
+
+            live.append({
+                'slug': 'record news',
+                'name': 'Record News',
+                'logo': 'https://oisa.tmsimg.com/assets/s38709_h3_aa.png',
+                'fanart': 'https://oisa.tmsimg.com/assets/s38709_h3_aa.png',
+                'thumb': 'https://oisa.tmsimg.com/assets/s38709_h3_aa.png',
+                'playable': 'true',
+                'plot': None,
+                'id': -7,
+                'channel_id': -7,
+                'duration': None,
+                'streamUrl': youtube.geturl('https://www.youtube.com/channel/UCuiLR4p6wQ3xLEm15pEn1Xw/live')
+            })
+
+        if ADDON.getSetting('channels.youtube') == 'true':
 
             live.append({
                 'slug': 'justica',
                 'name': u'TV JUSTIÇA',
-                'logo': 'http://oisa.tmsimg.com/h4/NowShowing/76237/s76237_h4_aa.png',
+                'logo': 'https://oisa.tmsimg.com/assets/s76237_h3_aa.png',
                 'fanart': 'https://yt3.ggpht.com/a-/ACSszfHWaYyZbKI54Ws8EsUYOZVLcc_ID2R_LlykCw=s900-mo-c-c0xffffffff-rj-k-no',
                 'thumb': 'https://yt3.ggpht.com/a-/ACSszfHWaYyZbKI54Ws8EsUYOZVLcc_ID2R_LlykCw=s900-mo-c-c0xffffffff-rj-k-no',
                 'playable': 'true',
@@ -304,13 +321,14 @@ class BRplayTVGuideApi():
                 'id': -4,
                 'channel_id': -4,
                 'duration': None,
-                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=3-7mJteOsxY'
+                # 'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=3-7mJteOsxY'
+                'streamUrl': youtube.geturl('https://www.youtube.com/channel/UC0qlZ5jxxueKNzUERcrllNw/live')
             })
 
             live.append({
                 'slug': 'senado',
                 'name': 'TV Senado',
-                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/d1d54ccbacb5c229ad5635b7b67abdd7215d03ac.png',
+                'logo': 'https://oisa.tmsimg.com/assets/s38060_h3_aa.png',
                 'fanart': 'https://yt3.ggpht.com/a-/ACSszfF-djZe6A1gCCr3q_aUQosHwe3dyTTHVFrXcw=s900-mo-c-c0xffffffff-rj-k-no',
                 'thumb': 'https://yt3.ggpht.com/a-/ACSszfF-djZe6A1gCCr3q_aUQosHwe3dyTTHVFrXcw=s900-mo-c-c0xffffffff-rj-k-no',
                 'playable': 'true',
@@ -318,13 +336,14 @@ class BRplayTVGuideApi():
                 'id': -5,
                 'channel_id': -5,
                 'duration': None,
-                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=Duvz4PaR7Gw'
+                # 'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=Duvz4PaR7Gw'
+                'streamUrl': youtube.geturl('https://www.youtube.com/user/TVSenadoOficial/live')
             })
 
             live.append({
                 'slug': 'shoptime',
                 'name': 'Shoptime',
-                'logo': 'https://apinew-cr-oi-prod-bs.sf.vubiquity.com/uploads/media/default/0001/01/32068ac2f5df236bb0731b448235923d15433df3.png',
+                'logo': 'https://oisa.tmsimg.com/assets/s16398_h3_aa.png',
                 'fanart': 'https://images-shoptime.b2w.io/zion/manifest/icons/5d7e972cec3c839ef0f8ab8cdd7cdb42.opengraph-image.png',
                 'thumb': 'https://images-shoptime.b2w.io/zion/manifest/icons/5d7e972cec3c839ef0f8ab8cdd7cdb42.opengraph-image.png',
                 'playable': 'true',
@@ -332,7 +351,8 @@ class BRplayTVGuideApi():
                 'id': -6,
                 'channel_id': -6,
                 'duration': None,
-                'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=qJ1QpbHn2Bk'
+                # 'streamUrl': 'plugin://plugin.video.youtube/?action=play_video&videoid=qJ1QpbHn2Bk'
+                'streamUrl': youtube.geturl('https://www.youtube.com/user/CanalShoptime/live')
             })
 
         threads = []
@@ -374,13 +394,17 @@ class BRplayTVGuideApi():
 
         liveglobo = 4452349
 
+        # logo = 'https://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png'
+        # logo = 'https://oisa.tmsimg.com/assets/s76937_h3_aa.png'
+        logo = 'https://upload.wikimedia.org/wikipedia/en/thumb/4/42/Rede_Globo_logo.png/220px-Rede_Globo_logo.png'
+
         live.append({
             'slug': 'globo',
             'name': 'Globo RJ',
             'title': 'Globo RJ',
-            'logo': 'https://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png',
+            'logo': logo,
             'fanart': ('https://s02.video.glbimg.com/x720/%s.jpg' % liveglobo),
-            'thumb': 'https://s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/42/f3/a1511ca14eeeca2e054c45b56e07.png',
+            'thumb': logo,
             'playable': 'true',
             'plot': "Globo RJ",
             'id': liveglobo,
@@ -424,9 +448,9 @@ class BRplayTVGuideApi():
 
         return result
 
-    epoch = datetime.datetime.utcfromtimestamp(0)
     def getEpochTicks(self):
-        return self.getTotalSeconds((datetime.datetime.utcnow() - self.epoch)) * 1000.0
+        epoch = datetime.datetime.utcfromtimestamp(0)
+        return self.getTotalSeconds((datetime.datetime.utcnow() - epoch)) * 1000.0
 
 
 
@@ -439,6 +463,9 @@ class BRplayTVGuideApi():
 
         live = []
 
+        # logo = 'https://s2.glbimg.com/WIdwvWihBQYoarSEGxCQuNf-caQ=/s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/7d/a4/19679ec6ed7a5eb860cd584e0cad.png'
+        logo = 'https://oisa.tmsimg.com/assets/s56084_h3_aa.png'
+
         for channel_data in live_channels:
             live_channel = {
                 'slug': 'premiere-fc',
@@ -447,8 +474,8 @@ class BRplayTVGuideApi():
                 'title': channel_data['description'],
                 'tvshowtitle': channel_data['name'],
                 'sorttitle': 'Premiere Clubes',
-                'logo': 'https://s2.glbimg.com/WIdwvWihBQYoarSEGxCQuNf-caQ=/s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/7d/a4/19679ec6ed7a5eb860cd584e0cad.png',
-                'clearlogo': 'https://s2.glbimg.com/WIdwvWihBQYoarSEGxCQuNf-caQ=/s3.glbimg.com/v1/AUTH_180b9dd048d9434295d27c4b6dadc248/media_kit/7d/a4/19679ec6ed7a5eb860cd584e0cad.png',
+                'logo': logo,
+                'clearlogo': logo,
                 'fanart': channel_data['image_url'],
                 'thumb': channel_data['snapshot_url'],
                 'playable': 'true',
@@ -488,7 +515,7 @@ class BRplayTVGuideApi():
                             'slug': result['slug'],
                             'name': transmission['title'],
                             'title': transmission['title'],
-                            'logo': result['color_logo'],
+                            'logo': SPORTV_LOGO if transmission['id_channel'] == 1996 else SPORTV2_LOGO if transmission['id_channel'] == 2001 else SPORTV3_LOGO if transmission['id_channel'] == 2002 else result['color_logo'],
                             'fanart': fanart,
                             'thumb': result['color_logo'],
                             'playable': 'true',
@@ -510,7 +537,8 @@ class BRplayTVGuideApi():
         channel_info = self.getJson(COMBATE_LIVE_URL, headers=headers)
         results = channel_info['results']
 
-        logo = "https://s.glbimg.com/pc/gm/media/dc0a6987403a05813a7194cd0fdb05be/2014/11/14/d19357930c6efe009ac1f8ed3a9b55aa.png"
+        # logo = "https://s.glbimg.com/pc/gm/media/dc0a6987403a05813a7194cd0fdb05be/2014/11/14/d19357930c6efe009ac1f8ed3a9b55aa.png"
+        logo = "https://oisa.tmsimg.com/assets/s56085_h3_aa.png"
         for result in results:
 
             live.append({
@@ -531,24 +559,26 @@ class BRplayTVGuideApi():
                         'brplayprovider': 'globosat'
                         })
 
-        # premierefc_games = self.getJson("https://globosatplay.globo.com/premierefc/ao-vivo/add-on/jogos-ao-vivo/520142353f8adb4c90000008.json")['jogos']
-        #
-        # logo = "https://s.glbimg.com/pc/gm/media/dc0a6987403a05813a7194cd0fdb05be/2014/11/14/6f6d8aa1ea586a03272a521cf6c50bc7.png"
-        # for index, game in enumerate(premierefc_games):
-        #     live.append({
-        #         'slug': 'premierefc',
-        #         'name': 'Premiere FC ' + str((index + 1)),
-        #         'title': 'Premiere FC ' + str((index + 1)),
-        #         'logo': logo,
-        #         'fanart': None,
-        #         'thumb': logo,
-        #         'playable': 'true',
-        #         'plot': game['campeonato'] + ': ' + game['time_mandante']['nome'] + ' x ' + game['time_visitante']['nome'] + ' (' + game['estadio'] + '). ' + game['data'],
-        #         'id': game['id_midia'],
-        #         'channel_id': 'premiere-' + str((index + 1)),
-        #         'duration': 180 * 60,
-        #         'brplayprovider': 'globosat'
-        #     })
+        if ADDON.getSetting('channels.adult') == 'true':
+            live.append({
+                'slug': 'sexyhot',
+                'name': 'Sexy Hot',
+                'title': 'Sexy Hot',
+                'sorttitle': 'Sexy Hot',
+                'clearlogo': 'https://oisa.tmsimg.com/assets/s56088_h3_ba.png',
+                'thumb': 'https://live-thumbs.video.globo.com/sexy24ha/snapshot/',
+                'studio': 'Sexy Hot',
+                'playable': 'true',
+                'id': 6988462,
+                'channel_id': 2065,
+                'live': True,
+                "mediatype": 'episode',
+                'livefeed': 'true',
+                'logo': 'https://oisa.tmsimg.com/assets/s56088_h3_ba.png',
+                'brplayprovider': 'globosat',
+                'adult': True,
+                'anonymous': True
+            })
 
         return live
 
@@ -587,7 +617,6 @@ class BRplayTVGuideApi():
     def getMaisPrograms(self, channel, tvdate): #1981
         schedule_url = "https://globosatplay.globo.com/globosat/ao-vivo/add-on/programacao/5565ce7d72696f449b1a0000.json"
         return self.getGlobosatPrograms(channel, tvdate, schedule_url, "https://live-thumbs.video.globo.com/maisgsat24ha/snapshot/")
-
 
     def getGlobosatPrograms(self, channel, tvdate, url, thumb):
 
@@ -691,10 +720,9 @@ class BRplayTVGuideApi():
                 .replace('sportv2', 'sportv 2')\
                 .replace('sportv3', 'sportv 3')\
                 .replace('globo rio', 'globo')\
-                .replace('redetv! rio de janeiro', 'redetv!')\
-                .replace('sbt rio', 'sbt')
+                .replace('redetv! rio de janeiro', 'redetv!')
 
-            if not guide_channel_name in channels:
+            if guide_channel_name not in channels:
                 continue
 
             #channel_logo = guide_channel['image']
@@ -707,7 +735,7 @@ class BRplayTVGuideApi():
                 program_thumb = images[0]['url'] if len(images) > 0 else None
                 channel_logo = program_poster
                 program_fanart = images[1]['url'] if len(images) > 1 else None
-                program_name = program['seriesTitle']
+                program_name = program['seriesTitle'] if program['seriesTitle'] == program['title'] else program['seriesTitle'] + u' - ' + program['title']
                 program_genre = program['genres'] or u''
                 episode_description = program['synopsis'] if 'synopsis' in program and program['synopsis'] else u''
                 seasonNumber = program['seasonNumber']

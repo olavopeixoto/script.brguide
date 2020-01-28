@@ -19,7 +19,7 @@
 #
 import xbmcaddon
 
-ADDON = xbmcaddon.Addon(id = 'script.brguide')
+ADDON = xbmcaddon.Addon(id='script.brguide')
 
 NO_DESCRIPTION = 30000
 CALCULATING_REMAINING_TIME = 30002
@@ -64,6 +64,7 @@ WEEBTV_WEBTV_MISSING_3 = 30804
 DATABASE_SCHEMA_ERROR_1 = 30157
 DATABASE_SCHEMA_ERROR_2 = 30158
 DATABASE_SCHEMA_ERROR_3 = 30159
+
 
 def strings(id, replacements = None):
     string = ADDON.getLocalizedString(id)
