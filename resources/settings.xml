@@ -20,7 +20,8 @@
         <setting id="channels.premierefc" label="Show Premiere FC Channels" type="bool" default="true" visible="eq(-11,0)" enable="eq(-11,0)" />
         <setting id="channels.redetv" label="Show RedeTV!" type="bool" default="true" visible="eq(-12,0)" enable="eq(-12,0)" />
         <setting id="channels.youtube" label="Show Youtube Channels" type="bool" default="true" visible="eq(-13,0)" enable="eq(-13,0)" />
-        <setting id="channels.adult" label="Show Adult Channels" type="bool" default="true" visible="eq(-15,0)" enable="eq(-14,0)" />
+        <setting id="channels.adult" label="Show Adult Channels" type="bool" default="true" visible="eq(-14,0)" enable="eq(-14,0)" />
+        <setting id="channels.oiplay" label="Show Oi Play" type="bool" default="true" visible="eq(-15,0)" enable="eq(-15,0)" />
 
         <setting type="lsep" />
 

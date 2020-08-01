@@ -41,6 +41,7 @@ COMBATE_LIVE_URL = 'http://api.simulcast.globosat.tv/combate'
 PREMIERE_24H_SIMULCAST = 'https://api-simulcast.globosat.tv/v1/premiereplay/'
 THUMBS_URL = 'https://s01.video.glbimg.com/x720/%s.jpg'
 
+OIPLAY_CHANNELS = 'https://apim.oi.net.br/app/oiplay/ummex/v1/lists/651acd5c-236d-47d1-9e57-584a233ab76a?limit=200&orderby=titleAsc&page=1&useragent=androidtv'
 
 SPORTV_LOGO = 'https://oisa.tmsimg.com/assets/s94567_h3_aa.png'
 SPORTV2_LOGO = 'https://oisa.tmsimg.com/assets/s94568_h3_aa.png'
@@ -369,6 +370,9 @@ class BRplayTVGuideApi():
         if ADDON.getSetting('channels.premierefc') == 'true':
             threads.append(workers.Thread(self.getPremiereFcLiveChannel, live))
 
+        if ADDON.getSetting('channels.oiplay') == 'true':
+            threads.append(workers.Thread(self.getOiPlayLiveChannels, live))
+
         [i.start() for i in threads]
         [i.join() for i in threads]
 
@@ -526,6 +530,32 @@ class BRplayTVGuideApi():
                             'duration': None,
                             'brplayprovider': 'globosat'
                             })
+
+        return live
+
+    def getOiPlayLiveChannels(self):
+        live = []
+
+        headers = {'Accept-Encoding': 'gzip'}
+        channel_info = self.getJson(OIPLAY_CHANNELS, headers=headers)
+        results = channel_info['items']
+
+        for result in results:
+            live.append({
+                'slug': result['callLetter'],
+                'name': result['title'],
+                'title': result['title'],
+                'logo': result['positiveLogoUrl'],
+                'fanart': result['positiveLogoUrl'],
+                'thumb': result['positiveLogoUrl'],
+                'playable': 'true',
+                'plot': None,
+                'id': result['prgSvcId'],
+                'channel_id': result['prgSvcId'],
+                'id_globo': result['prgSvcId'],
+                'duration': None,
+                'brplayprovider': 'oiplay'
+            })
 
         return live
 
@@ -712,15 +742,18 @@ class BRplayTVGuideApi():
                 channels.append(channel.replace(' rj', ''))
 
         for guide_channel in guide:
-            guide_channel_name = guide_channel['title'].lower().replace(' hd', '')\
-                .replace('+ globosat', 'mais globosat')\
-                .replace('off', 'canal off')\
-                .replace('universal tv', 'universal')\
-                .replace('globo news', 'globonews')\
-                .replace('sportv2', 'sportv 2')\
-                .replace('sportv3', 'sportv 3')\
-                .replace('globo rio', 'globo')\
-                .replace('redetv! rio de janeiro', 'redetv!')
+            if 'brplayprovider' in channel_info and channel_info['brplayprovider'] == 'oiplay':
+                guide_channel_name = guide_channel['title'].lower()
+            else:
+                guide_channel_name = guide_channel['title'].lower().replace(' hd', '')\
+                    .replace('+ globosat', 'mais globosat')\
+                    .replace('off', 'canal off')\
+                    .replace('universal tv', 'universal')\
+                    .replace('globo news', 'globonews')\
+                    .replace('sportv2', 'sportv 2')\
+                    .replace('sportv3', 'sportv 3')\
+                    .replace('globo rio', 'globo')\
+                    .replace('redetv! rio de janeiro', 'redetv!')
 
             if guide_channel_name not in channels:
                 continue
