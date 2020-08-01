@@ -537,6 +537,7 @@ class BRplayTVGuideApi():
                 'plot': None,
                 'id': result['prgSvcId'],
                 'channel_id': result['prgSvcId'],
+                'prgSvcId': result['prgSvcId'],
                 'id_globo': result['prgSvcId'],
                 'duration': None,
                 'brplayprovider': 'oiplay'
@@ -718,70 +719,89 @@ class BRplayTVGuideApi():
 
         url = 'https://apim.oi.net.br/app/oiplay/ummex/v1/epg?starttime=%s&endtime=%s' % (datebefore, date)
 
-        guide = self.getJson(url, headers={'Accept': 'application/json'})
+        guide = self.getJson(url, headers={'Accept': 'application/json', 'Accept-Encoding': 'gzip'})
 
-        channels = [channel['name'].lower() for channel in self.channels()]
-        # channels.append('universal channel')
-        for channel in list(channels):
-            if channel.endswith(' rj'):
-                channels.append(channel.replace(' rj', ''))
+        EXTRA_CHANNELS = [
+            114159,  # CNN Brasil
+            10179,   # ESPN
+            75585,   # ESPN 2
+            109973,  # ESPN Extra
+            90905,   # Food Network
+            111477,  # HGTV
+            41309   # BAND
+        ]
+
+        for channel in EXTRA_CHANNELS:
+            url = 'https://apim.oi.net.br/app/oiplay/ummex/v1/epg/%s/beforenowandnext?beforeCount=100&includeCurrentProgram=true&nextCount=100' % (channel)
+            result = self.getJson(url, headers={'Accept': 'application/json', 'Accept-Encoding': 'gzip'})
+            guide.append(result)
+
+        channels = [channel['name'].lower().replace(' rj', '') if channel['name'].lower().endswith(' rj') else channel['name'].lower() for channel in self.channels() if 'prgSvcId' not in channel]
+        channels_ids = [channel['prgSvcId'] for channel in self.channels() if 'prgSvcId' in channel]
 
         for guide_channel in guide:
-            if 'brplayprovider' in channel_info and channel_info['brplayprovider'] == 'oiplay':
-                guide_channel_name = guide_channel['title'].lower()
-            else:
-                guide_channel_name = guide_channel['title'].lower().replace(' hd', '')\
-                    .replace('+ globosat', 'mais globosat')\
-                    .replace('off', 'canal off')\
-                    .replace('universal tv', 'universal')\
-                    .replace('globo news', 'globonews')\
-                    .replace('sportv2', 'sportv 2')\
-                    .replace('sportv3', 'sportv 3')\
-                    .replace('globo rio', 'globo')\
-                    .replace('redetv! rio de janeiro', 'redetv!')
+            virtual_channels = []
 
-            if guide_channel_name not in channels:
+            if guide_channel['prgSvcId'] in channels_ids:
+                guide_channel_name = guide_channel['title'].lower()
+                virtual_channels.append(guide_channel_name)
+
+            guide_channel_name = guide_channel['title'].lower().replace(' hd', '')\
+                .replace('+ globosat', 'mais globosat')\
+                .replace('off', 'canal off')\
+                .replace('universal tv', 'universal')\
+                .replace('globo news', 'globonews')\
+                .replace('sportv2', 'sportv 2')\
+                .replace('sportv3', 'sportv 3')\
+                .replace('globo rio', 'globo')\
+                .replace('redetv! rio de janeiro', 'redetv!')
+
+            virtual_channels.append(guide_channel_name)
+
+            if not (guide_channel_name in channels or guide_channel['prgSvcId'] in channels_ids):
                 continue
 
-            #channel_logo = guide_channel['image']
-            date_programs = self.channel_programs[guide_channel_name] if guide_channel_name in self.channel_programs else {}
-            programs = date_programs[date] if date in date_programs else []
-            program_poster = guide_channel['positiveLogoUrl']
-            for schedule in guide_channel['schedules']:
-                program = schedule['program']
-                images = program['programImages'] if 'programImages' in program else None
-                program_thumb = images[0]['url'] if len(images) > 0 else None
-                channel_logo = program_poster
-                program_fanart = images[1]['url'] if len(images) > 1 else None
-                program_name = program['seriesTitle'] if program['seriesTitle'] == program['title'] else program['seriesTitle'] + u' - ' + program['title']
-                program_genre = program['genres'] or u''
-                episode_description = program['synopsis'] if 'synopsis' in program and program['synopsis'] else u''
-                seasonNumber = program['seasonNumber']
-                episodeNumber = program['episodeNumber']
-                episodeTitle = u'T' + str(seasonNumber) + u' E' + str(episodeNumber) + u' ' + program['title'] + '\n' if program['seriesTitle'] != program['title'] else u''
+            for guide_channel_name in virtual_channels:
 
-                start_date = schedule['startTimeUtc']
-                duration = schedule['durationSeconds']
+                #channel_logo = guide_channel['image']
+                date_programs = self.channel_programs[guide_channel_name] if guide_channel_name in self.channel_programs else {}
+                programs = date_programs[date] if date in date_programs else []
+                program_poster = guide_channel['positiveLogoUrl']
+                for schedule in guide_channel['schedules']:
+                    program = schedule['program']
+                    images = program['programImages'] if 'programImages' in program else None
+                    program_thumb = images[0]['url'] if len(images) > 0 else None
+                    channel_logo = program_poster
+                    program_fanart = images[1]['url'] if len(images) > 1 else None
+                    program_name = program['seriesTitle'] if program['seriesTitle'] == program['title'] else program['seriesTitle'] + u' - ' + program['title']
+                    program_genre = program['genres'] or u''
+                    episode_description = program['synopsis'] if 'synopsis' in program and program['synopsis'] else u''
+                    seasonNumber = program['seasonNumber']
+                    episodeNumber = program['episodeNumber']
+                    episodeTitle = u'T' + str(seasonNumber) + u' E' + str(episodeNumber) + u' ' + program['title'] + '\n' if program['seriesTitle'] != program['title'] else u''
 
-                beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%dT%H:%M:%SZ')
-                endTime = beginTime + datetime.timedelta(seconds=duration)
+                    start_date = schedule['startTimeUtc']
+                    duration = schedule['durationSeconds']
 
-                programs.append({
-                    "title": program_name,
-                    "description": episodeTitle + episode_description + u'\n(' + program_genre + u')',
-                    "begin": beginTime,
-                    "end": endTime,
-                    "logo": channel_logo,
-                    "live_poster": program_poster,
-                    "thumbnail": program_thumb,
-                    "thumbnail_hd": program_thumb,
-                    'images_sixteenbynine': {
-                        'large': program_fanart,
-                        'small': program_thumb
-                    }
-                })
+                    beginTime = self.strptimeWorkaround(start_date, format='%Y-%m-%dT%H:%M:%SZ')
+                    endTime = beginTime + datetime.timedelta(seconds=duration)
 
-            date_programs.update({date: programs})
-            self.channel_programs.update({guide_channel_name: date_programs})
+                    programs.append({
+                        "title": program_name,
+                        "description": episodeTitle + episode_description + u'\n(' + program_genre + u')',
+                        "begin": beginTime,
+                        "end": endTime,
+                        "logo": channel_logo,
+                        "live_poster": program_poster,
+                        "thumbnail": program_thumb,
+                        "thumbnail_hd": program_thumb,
+                        'images_sixteenbynine': {
+                            'large': program_fanart,
+                            'small': program_thumb
+                        }
+                    })
+
+                date_programs.update({date: programs})
+                self.channel_programs.update({guide_channel_name: date_programs})
 
         return self.channel_programs[channel_name][date]
