@@ -249,21 +249,6 @@ class BRplayTVGuideApi():
         #         'streamUrl': 'https://evpp.mm.uol.com.br/geob_band/bandnewstv/playlist.m3u8'
         #     })
 
-        if ADDON.getSetting('channels.redetv') == 'true':
-            live.append({
-                'slug': 'redetv',
-                'name': 'RedeTV!',
-                'logo': 'https://oisa.tmsimg.com/assets/s103750_h3_aa.png',
-                'fanart': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
-                'thumb': 'https://vignette.wikia.nocookie.net/logopedia/images/e/ec/RedeTV%21.png/revision/latest?cb=20110305125842',
-                'playable': 'true',
-                'plot': None,
-                'id': -2,
-                'channel_id': -2,
-                'duration': None,
-                'streamUrl': 'http://evpp.mm.uol.com.br/redetv1/redetv1/playlist.m3u8'
-            })
-
         if ADDON.getSetting('channels.globoplay') == 'true':
             live.append({
                 'slug': 'futura',
@@ -506,7 +491,7 @@ class BRplayTVGuideApi():
         channel_info = self.getJson(GLOBOSAT_API_CHANNELS % page, headers=headers)
         results = channel_info['results']
         # loop through pages
-        while channel_info['next'] <> None:
+        while channel_info['next'] is not None:
             page += 1
             channel_info = self.getJson(GLOBOSAT_API_CHANNELS % page, headers=headers)
             results.update(channel_info['results'])
